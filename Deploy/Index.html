@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ระบบจัดการ Stock - BTT</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --white: #ffffff;
+        --bg: #f8fafc;
+        --ink: #0f172a;
+        --ink-soft: #475569;
+        --muted: #94a3b8;
+        --line: #e2e8f0;
+        --line-soft: #eef1f5;
+        --space-xs: 8px;
+        --space-sm: 16px;
+        --space-md: 24px;
+        --space-lg: 32px;
+        --space-xl: 48px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', 'Prompt', sans-serif;
+        background-color: var(--bg);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        letter-spacing: -0.01em;
+      }
+
+      /* ---------- Top bar ---------- */
+      .topbar {
+        background: var(--white);
+        border-bottom: 1px solid var(--line);
+        padding: var(--space-md) var(--space-xl);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-md);
+      }
+
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .brand-mark {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        background: var(--ink);
+        display: inline-block;
+      }
+      .brand-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+      }
+      .brand-sub {
+        font-weight: 400;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .topbar-actions {
+        display: flex;
+        gap: var(--space-sm);
+      }
+
+      .btn-mini {
+        background: var(--white);
+        border: 1px solid var(--line);
+        color: var(--ink-soft);
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: border-color 0.15s ease, color 0.15s ease;
+        position: relative;
+      }
+      .btn-mini:hover {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+      .btn-mini .count-dot {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: var(--ink);
+        color: var(--white);
+        font-size: 0.65rem;
+        font-weight: 600;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+      }
+
+      /* ---------- Layout ---------- */
+      .shell {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--space-xl);
+      }
+
+      /* ---------- Stat row ---------- */
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: var(--space-xl);
+      }
+      .stat-cell {
+        background: var(--white);
+        padding: var(--space-lg) var(--space-md);
+      }
+      .stat-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 10px;
+      }
+      .stat-value {
+        font-size: 1.9rem;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+      .stat-value.small {
+        font-size: 1.4rem;
+      }
+
+      /* ---------- Section / Tabs ---------- */
+      .panel {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .panel-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--line);
+        padding: 0 var(--space-md);
+        overflow-x: auto;
+      }
+      .tab-btn {
+        background: none;
+        border: none;
+        padding: var(--space-md) 4px;
+        margin-right: var(--space-lg);
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--muted);
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: color 0.15s ease;
+        white-space: nowrap;
+      }
+      .tab-btn:hover {
+        color: var(--ink);
+      }
+      .tab-btn.active {
+        color: var(--ink);
+        font-weight: 600;
+        border-bottom-color: var(--ink);
+      }
+      .panel-body {
+        padding: var(--space-md);
+      }
+
+      /* ---------- Toolbar ---------- */
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+        align-items: center;
+        margin-bottom: var(--space-md);
+      }
+      .field {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 9px 12px;
+        font-size: 0.85rem;
+        color: var(--ink);
+        flex: 1;
+        min-width: 160px;
+      }
+      .field:focus {
+        outline: none;
+        border-color: var(--ink);
+        box-shadow: none;
+      }
+      .field-search-wrap {
+        position: relative;
+        flex: 2;
+        min-width: 220px;
+      }
+      .field-search-wrap i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+      .field-search-wrap .field {
+        padding-left: 32px;
+        width: 100%;
+      }
+
+      .btn-flat {
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: var(--white);
+        font-size: 0.82rem;
+        font-weight: 500;
+        padding: 9px 18px;
+        border-radius: 6px;
+        white-space: nowrap;
+        transition: opacity 0.15s ease;
+      }
+      .btn-flat:hover {
+        opacity: 0.85;
+        color: var(--white);
+      }
+
+      .btn-outline-flat {
+        border: 1px solid var(--line);
+        background: var(--white);
+        color: var(--ink);
+        font-size: 0.82rem;
+        font-weight: 500;
+        padding: 9px 18px;
+        border-radius: 6px;
+        white-space: nowrap;
+        transition: border-color 0.15s ease;
+      }
+      .btn-outline-flat:hover {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+
+      /* ---------- Table ---------- */
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table.plain {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.83rem;
+      }
+      table.plain thead th {
+        text-align: left;
+        font-weight: 500;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--muted);
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      table.plain tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--ink);
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+      table.plain tbody tr:last-child td {
+        border-bottom: none;
+      }
+      table.plain tbody tr {
+        transition: background 0.1s ease;
+      }
+      table.plain tbody tr:hover {
+        background: var(--bg);
+      }
+
+      .text-center {
+        text-align: center;
+      }
+      .text-end {
+        text-align: right;
+      }
+      .fw-strong {
+        font-weight: 600;
+      }
+      .txt-muted {
+        color: var(--muted);
+      }
+      .txt-soft {
+        color: var(--ink-soft);
+      }
+
+      .empty-row {
+        text-align: center;
+        padding: 48px 16px;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      /* ---------- Checkbox Styling ---------- */
+      .custom-chk {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: var(--ink);
+      }
+
+      /* ---------- Tag / badge ---------- */
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        color: var(--ink-soft);
+        background: var(--white);
+      }
+      .tag-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+      .tag.ok .tag-dot {
+        background: #0f172a;
+      }
+      .tag.warn {
+        border-color: #cbd5e1;
+      }
+      .tag.warn .tag-dot {
+        background: var(--ink);
+      }
+      .tag.alert {
+        color: var(--white);
+        border-color: var(--ink);
+        background: var(--ink);
+      }
+      .tag.alert .tag-dot {
+        background: var(--white);
+      }
+
+      .link-code {
+        color: var(--ink);
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 1px dotted var(--muted);
+      }
+
+      .btn-ghost-sm {
+        border: 1px solid var(--line);
+        background: var(--white);
+        color: var(--ink);
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .btn-ghost-sm:hover {
+        border-color: var(--ink);
+      }
+      .btn-ghost-sm.danger:hover {
+        border-color: #0f172a;
+        color: #0f172a;
+        background: var(--bg);
+      }
+
+      .action-cell {
+        display: inline-flex;
+        gap: 6px;
+      }
+
+      .thumb {
+        width: 36px;
+        height: 36px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .thumb-placeholder {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        border: 1px dashed var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 0.75rem;
+        margin: 0 auto;
+      }
+
+      /* ---------- Modal ---------- */
+      .modal-content {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: none;
+      }
+      .modal-header {
+        background: var(--white);
+        color: var(--ink);
+        border-bottom: 1px solid var(--line);
+        padding: var(--space-md);
+      }
+      .modal-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .modal-body {
+        padding: var(--space-md);
+      }
+      .modal-footer {
+        border-top: 1px solid var(--line);
+        padding: var(--space-md);
+      }
+      .btn-close {
+        filter: none;
+        opacity: 0.5;
+      }
+      .form-label {
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--ink-soft);
+        margin-bottom: 6px;
+      }
+      .form-control,
+      .form-select {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        padding: 9px 12px;
+      }
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--ink);
+        box-shadow: none;
+      }
+
+      .img-preview-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .img-preview {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        display: none;
+      }
+
+      .thumb.clickable {
+        cursor: zoom-in;
+        transition: opacity 0.15s ease;
+      }
+      .thumb.clickable:hover {
+        opacity: 0.8;
+      }
+      #imagePreviewModal .modal-body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-sm);
+        background: var(--bg);
+      }
+      #imagePreviewModal img {
+        max-width: 100%;
+        max-height: 70vh;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        object-fit: contain;
+        background: var(--white);
+      }
+
+      .selected-items-badge-container {
+        max-height: 120px;
+        overflow-y: auto;
+        border: 1px solid var(--line);
+        padding: 8px;
+        border-radius: 6px;
+        background: var(--bg);
+      }
+
+      @media (max-width: 900px) {
+        .stat-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .shell {
+          padding: var(--space-md);
+        }
+        .topbar {
+          padding: var(--space-md);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span class="brand-title">Stock — BTT</span>
+        <span class="brand-sub">ระบบจัดการ Stock</span>
+      </div>
+      <div class="topbar-actions">
+        <button
+          class="btn-mini"
+          onclick="openLowStockModal()"
+          id="alertBadgeBtn"
+        >
+          <i class="fa-regular fa-bell"></i> แจ้งเตือนซื้อเพิ่ม
+          <span class="count-dot" id="lowStockCountBadge">0</span>
+        </button>
+        <button class="btn-mini" onclick="loadData()">
+          <i class="fa-solid fa-arrow-rotate-right"></i> รีเฟรช
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <!-- Summary -->
+      <div class="stat-row">
+        <div class="stat-cell">
+          <div class="stat-label">อุปกรณ์ทั้งหมด</div>
+          <div class="stat-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">พร้อมใช้งาน</div>
+          <div class="stat-value" id="stat-available">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">ถูกยืมอยู่</div>
+          <div class="stat-value" id="stat-borrowed">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">มูลค่าสต็อกรวม</div>
+          <div class="stat-value small" id="stat-valuation">0 ฿</div>
+        </div>
+      </div>
+
+      <!-- Main panel -->
+      <div class="panel">
+        <div class="panel-tabs" id="mainTab">
+          <button
+            class="tab-btn active"
+            id="assets-tab"
+            data-target="assets-pane"
+          >
+            รายการอุปกรณ์ทั้งหมด
+          </button>
+          <button class="tab-btn" id="borrow-tab" data-target="borrow-pane">
+            ประวัติการยืม - คืน
+          </button>
+          <button class="tab-btn" id="logs-tab" data-target="logs-pane">
+            ประวัติกิจกรรม (Logs)
+          </button>
+        </div>
+
+        <div class="panel-body">
+          <!-- Pane: Assets -->
+          <div id="assets-pane" class="tab-pane-view">
+            <div class="toolbar">
+              <div class="field-search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input
+                  type="text"
+                  class="field"
+                  id="searchInput"
+                  placeholder="ค้นหารหัส, ชื่อ, หรือหมายเหตุ..."
+                  oninput="filterAssets()"
+                />
+              </div>
+              <select
+                class="field"
+                id="filterCategory"
+                onchange="filterAssets()"
+              >
+                <option value="">ทุกหมวดหมู่</option>
+              </select>
+              <select
+                class="field"
+                id="filterLocation"
+                onchange="filterAssets()"
+              >
+                <option value="">ทุกสถานที่จัดเก็บ</option>
+              </select>
+              <button class="btn-outline-flat" onclick="openBorrowModal()">
+                <i class="fa-solid fa-hand-holding me-1"></i> เบิกรายการที่เลือก
+                (<span id="selectedCountUI">0</span>)
+              </button>
+              <button class="btn-flat" onclick="openAddAssetModal()">
+                <i class="fa-solid fa-plus me-1"></i> เพิ่มรายการ
+              </button>
+            </div>
+
+            <div class="table-wrap">
+              <table class="plain">
+                <thead>
+                  <tr>
+                    <th class="text-center" style="width: 40px">
+                      <input
+                        type="checkbox"
+                        class="custom-chk"
+                        id="selectAllChk"
+                        onchange="toggleSelectAll(this)"
+                        title="เลือกทั้งหมด"
+                      />
+                    </th>
+                    <th class="text-center">QR Code</th>
+                    <th class="text-center">รูปภาพ</th>
+                    <th>รหัส</th>
+                    <th>ชื่อรายการ</th>
+                    <th>หมวดหมู่</th>
+                    <th>สถานที่จัดเก็บ</th>
+                    <th class="text-center">BTT</th>
+                    <th class="text-center">TKE</th>
+                    <th class="text-center">TOTAL</th>
+                    <th class="text-center">Max / Min</th>
+                    <th class="text-end">ราคา/หน่วย</th>
+                    <th class="text-center">สถานะ</th>
+                    <th class="text-center">ต้องซื้อเพิ่ม</th>
+                    <th>หมายเหตุ</th>
+                    <th class="text-center">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="assets-table-body">
+                  <tr>
+                    <td colspan="16" class="empty-row">กำลังโหลดข้อมูล...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pane: Borrow history -->
+          <div id="borrow-pane" class="tab-pane-view" style="display: none">
+            <div class="table-wrap">
+              <table class="plain">
+                <thead>
+                  <tr>
+                    <th class="text-center">ลำดับ</th>
+                    <th>รหัสอุปกรณ์</th>
+                    <th>ชื่อโครงการ</th>
+                    <th class="text-center">จำนวน</th>
+                    <th class="text-center">วันที่เบิก</th>
+                    <th class="text-center">วันที่คืน</th>
+                    <th>ชื่อผู้เบิก</th>
+                    <th>ตำแหน่งที่อยู่</th>
+                    <th class="text-center">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="borrow-table-body">
+                  <tr>
+                    <td colspan="9" class="empty-row">กำลังโหลดข้อมูล...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pane: Logs -->
+          <div id="logs-pane" class="tab-pane-view" style="display: none">
+            <div class="table-wrap">
+              <table class="plain">
+                <thead>
+                  <tr>
+                    <th class="text-center">ลำดับ</th>
+                    <th>วัน-เวลา</th>
+                    <th>ผู้ใช้งาน</th>
+                    <th>กิจกรรม</th>
+                    <th>รายละเอียด</th>
+                  </tr>
+                </thead>
+                <tbody id="logs-table-body">
+                  <tr>
+                    <td colspan="5" class="empty-row">กำลังโหลดข้อมูล...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: เพิ่ม / แก้ไข อุปกรณ์ -->
+    <div class="modal fade" id="addAssetModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addAssetModalTitle">
+              เพิ่มอุปกรณ์ใหม่
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <form id="addAssetForm" onsubmit="handleSaveAsset(event)">
+            <div class="modal-body">
+              <input
+                type="hidden"
+                name="oldAssetId"
+                id="oldAssetIdField"
+                value=""
+              />
+              <div class="mb-3">
+                <label class="form-label">รหัสสินค้า *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="assetId"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ชื่อรายการ *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="assetName"
+                  required
+                />
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label">หมวดหมู่</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="assetCategory"
+                    list="categoryList"
+                  />
+                  <datalist id="categoryList"></datalist>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">สถานที่จัดเก็บ</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="assetLocation"
+                    list="locationList"
+                  />
+                  <datalist id="locationList"></datalist>
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label">จำนวน BTT *</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="assetBtt"
+                    value="0"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label">จำนวน TKE *</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="assetTke"
+                    value="0"
+                    min="0"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label">Stock Max</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="assetMax"
+                    value="10"
+                    min="0"
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Stock Min</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="assetMin"
+                    value="2"
+                    min="0"
+                  />
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label">ราคา/หน่วย</label>
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control"
+                    name="assetPrice"
+                    value="0"
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label">สถานะ</label>
+                  <select class="form-select" name="assetStatus">
+                    <option value="พร้อมใช้งาน">พร้อมใช้งาน</option>
+                    <option value="ชำรุด">ชำรุด</option>
+                    <option value="ส่งซ่อม">ส่งซ่อม</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">URL รูปภาพ</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="assetImageUrl"
+                  id="assetImageUrlField"
+                  placeholder="https://..."
+                  oninput="previewAssetImage(this.value)"
+                />
+                <div class="img-preview-row">
+                  <img
+                    id="assetImagePreview"
+                    class="img-preview"
+                    alt="ตัวอย่าง"
+                  />
+                  <span class="txt-muted" style="font-size: 0.75rem"
+                    >ตัวอย่างรูปภาพ (ถ้ามี URL)</span
+                  >
+                </div>
+              </div>
+              <div class="mb-1">
+                <label class="form-label">หมายเหตุ</label>
+                <input type="text" class="form-control" name="assetRemark" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn-outline-flat"
+                data-bs-dismiss="modal"
+              >
+                ยกเลิก
+              </button>
+              <button type="submit" class="btn-flat" id="addAssetSubmitBtn">
+                บันทึก
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: ยืมอุปกรณ์ -->
+    <div class="modal fade" id="borrowModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">บันทึกการเบิก/ยืมอุปกรณ์</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <form id="borrowForm" onsubmit="handleSaveBorrow(event)">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">รายการอุปกรณ์ที่เลือกเบิก *</label>
+                <div
+                  id="borrowSelectedItemsList"
+                  class="selected-items-badge-container mb-2"
+                >
+                  <span class="txt-muted small">ยังไม่ได้เลือกรายการ</span>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ชื่อโครงการ</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="projectName"
+                  placeholder="ระบุชื่อโครงการ/งาน"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ชื่อผู้เบิก *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="borrowerName"
+                  required
+                  placeholder="ระบุชื่อผู้เบิก"
+                />
+              </div>
+              <div class="mb-1">
+                <label class="form-label"
+                  >ตำแหน่งที่อยู่ / สถานที่นำไปใช้</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="locationAddress"
+                  placeholder="สถานที่นำอุปกรณ์ไปใช้งาน"
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn-outline-flat"
+                data-bs-dismiss="modal"
+              >
+                ยกเลิก
+              </button>
+              <button type="submit" class="btn-flat">ยืนยันการยืม</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: แจ้งเตือนสินค้าต้องซื้อเพิ่ม -->
+    <div class="modal fade" id="lowStockModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              รายการสินค้าที่ต้องซื้อเพิ่ม (ต่ำกว่า Stock Min)
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-wrap">
+              <table class="plain">
+                <thead>
+                  <tr>
+                    <th>รหัส</th>
+                    <th>ชื่อรายการ</th>
+                    <th class="text-center">TOTAL คงเหลือ</th>
+                    <th class="text-center">Min</th>
+                    <th class="text-center">สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody id="lowStockTableBody">
+                  <tr>
+                    <td colspan="5" class="empty-row">
+                      ไม่มีสินค้าที่ต้องซื้อเพิ่มในขณะนี้
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn-outline-flat"
+              data-bs-dismiss="modal"
+            >
+              ปิด
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: ดูรูปภาพ / QR Code เต็ม -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="imagePreviewTitle">รูปภาพ</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <img id="imagePreviewImg" src="" alt="" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      let modalAddAsset, modalBorrow, modalLowStock, modalImagePreview
+      let globalAssets = []
+      let globalLowStock = []
+      let selectedCodes = new Set()
+
+      document.addEventListener('DOMContentLoaded', () => {
+        modalAddAsset = new bootstrap.Modal(
+          document.getElementById('addAssetModal')
+        )
+        modalBorrow = new bootstrap.Modal(
+          document.getElementById('borrowModal')
+        )
+        modalLowStock = new bootstrap.Modal(
+          document.getElementById('lowStockModal')
+        )
+        modalImagePreview = new bootstrap.Modal(
+          document.getElementById('imagePreviewModal')
+        )
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document
+              .querySelectorAll('.tab-btn')
+              .forEach(b => b.classList.remove('active'))
+            document
+              .querySelectorAll('.tab-pane-view')
+              .forEach(p => (p.style.display = 'none'))
+            btn.classList.add('active')
+            document.getElementById(btn.dataset.target).style.display = 'block'
+          })
+        })
+
+        loadData()
+      })
+
+      function loadData() {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              globalAssets = res.assets || []
+              globalLowStock = res.lowStockItems || []
+              const summary = res.summary || {}
+
+              document.getElementById('stat-total').innerText =
+                summary.total || 0
+              document.getElementById('stat-available').innerText =
+                summary.available || 0
+              document.getElementById('stat-borrowed').innerText =
+                summary.borrowed || 0
+              document.getElementById('stat-valuation').innerText =
+                Number(summary.totalValuation || 0).toLocaleString() + ' ฿'
+              document.getElementById('lowStockCountBadge').innerText =
+                summary.lowStockCount || 0
+
+              populateFilters(res.categories || [], res.locations || [])
+
+              renderAssetsTable(globalAssets)
+              renderBorrowTable(res.borrows || [])
+              renderLowStockTable(globalLowStock)
+              renderLogsTable(res.logs || [])
+            } else {
+              Swal.fire(
+                'ข้อผิดพลาด',
+                (res && res.message) || 'ไม่สามารถโหลดข้อมูลได้',
+                'error'
+              )
+            }
+          })
+          .withFailureHandler(err => {
+            Swal.fire(
+              'ข้อผิดพลาด',
+              (err && err.message) || String(err),
+              'error'
+            )
+          })
+          .getInitialData()
+      }
+
+      function populateFilters(categories, locations) {
+        categories = categories || []
+        locations = locations || []
+
+        const catSelect = document.getElementById('filterCategory')
+        const locSelect = document.getElementById('filterLocation')
+        const catDatalist = document.getElementById('categoryList')
+        const locDatalist = document.getElementById('locationList')
+
+        const currentCat = catSelect.value
+        const currentLoc = locSelect.value
+
+        catSelect.innerHTML =
+          '<option value="">ทุกหมวดหมู่</option>' +
+          categories
+            .map(
+              c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`
+            )
+            .join('')
+        locSelect.innerHTML =
+          '<option value="">ทุกสถานที่จัดเก็บ</option>' +
+          locations
+            .map(
+              l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`
+            )
+            .join('')
+
+        catDatalist.innerHTML = categories
+          .map(c => `<option value="${escapeHtml(c)}">`)
+          .join('')
+        locDatalist.innerHTML = locations
+          .map(l => `<option value="${escapeHtml(l)}">`)
+          .join('')
+
+        catSelect.value = currentCat
+        locSelect.value = currentLoc
+      }
+
+      function filterAssets() {
+        const keyword = (
+          document.getElementById('searchInput').value || ''
+        ).toLowerCase()
+        const selectedCat = document.getElementById('filterCategory').value
+        const selectedLoc = document.getElementById('filterLocation').value
+
+        const filtered = globalAssets.filter(row => {
+          const code = String(row[0] || '').toLowerCase()
+          const name = String(row[1] || '').toLowerCase()
+          const cat = String(row[2] || '')
+          const loc = String(row[3] || '')
+          const remark = String(row[12] || '').toLowerCase()
+
+          const matchKeyword =
+            code.includes(keyword) ||
+            name.includes(keyword) ||
+            remark.includes(keyword)
+          const matchCat = !selectedCat || cat === selectedCat
+          const matchLoc = !selectedLoc || loc === selectedLoc
+
+          return matchKeyword && matchCat && matchLoc
+        })
+
+        renderAssetsTable(filtered)
+      }
+
+      function escapeHtml(str) {
+        if (str == null) return ''
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
+      }
+
+      function openQrPreview(code) {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
+          code
+        )}`
+        openImagePreview(qrUrl, `QR Code: ${code}`)
+      }
+
+      function openAssetPreview(code) {
+        const item = globalAssets.find(r => String(r[0]) === String(code))
+        if (item && item[13]) {
+          openImagePreview(item[13], item[1] || code)
+        }
+      }
+
+      function renderAssetsTable(data) {
+        const tbody = document.getElementById('assets-table-body')
+        if (!data || data.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="16" class="empty-row">ไม่พบข้อมูลอุปกรณ์ตามเงื่อนไข</td></tr>'
+          return
+        }
+
+        tbody.innerHTML = data
+          .map(row => {
+            const code = String(row[0] || '')
+            const imageUrl = row[13] || ''
+            const isChecked = selectedCodes.has(code) ? 'checked' : ''
+
+            const safeCode = escapeHtml(code)
+
+            // แก้ไขจุดที่เกิด Error โดยใช้ data-code และเรียกผ่านฟังก์ชันรับ attribute
+            let qrHtml = '-'
+            if (code) {
+              const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+                code
+              )}`
+              qrHtml = `<img src="${qrDataUrl}" class="thumb clickable" style="background:#fff; padding:2px;" data-code="${safeCode}" onclick="openQrPreview(this.dataset.code)" title="คลิกเพื่อดู QR Code ใหญ่">`
+            }
+
+            const imgHtml = imageUrl
+              ? `<img src="${escapeHtml(
+                  imageUrl
+                )}" class="thumb clickable" title="คลิกเพื่อดูรูปเต็ม" data-code="${safeCode}" onclick="openAssetPreview(this.dataset.code)">`
+              : '<div class="thumb-placeholder"><i class="fa-regular fa-image"></i></div>'
+
+            return `
+            <tr>
+              <td class="text-center">
+                <input type="checkbox" class="custom-chk row-chk" value="${safeCode}" ${isChecked} data-code="${safeCode}" onchange="handleRowChkChange(this, this.dataset.code)">
+              </td>
+              <td class="text-center">${qrHtml}</td>
+              <td class="text-center">${imgHtml}</td>
+              <td class="fw-strong">${safeCode}</td>
+              <td>${escapeHtml(row[1])}</td>
+              <td class="txt-soft">${escapeHtml(row[2] || '-')}</td>
+              <td class="txt-soft">${escapeHtml(row[3] || '-')}</td>
+              <td class="text-center">${escapeHtml(row[7])}</td>
+              <td class="text-center">${escapeHtml(row[8])}</td>
+              <td class="text-center fw-strong">${escapeHtml(row[9])}</td>
+              <td class="text-center txt-muted">${escapeHtml(
+                row[4]
+              )} / ${escapeHtml(row[5])}</td>
+              <td class="text-end">${Number(row[6] || 0).toLocaleString()}</td>
+              <td class="text-center">${getStatusBadge(row[10])}</td>
+              <td class="text-center">${
+                row[11] === 'ต้องซื้อเพิ่ม'
+                  ? '<span class="tag alert"><span class="tag-dot"></span>ต้องซื้อเพิ่ม</span>'
+                  : '<span class="tag"><span class="tag-dot"></span>เพียงพอ</span>'
+              }</td>
+              <td class="txt-muted">${escapeHtml(row[12] || '-')}</td>
+              <td class="text-center">
+                <div class="action-cell">
+                  <button class="btn-ghost-sm" data-code="${safeCode}" onclick="openEditAssetModal(this.dataset.code)" title="แก้ไข">
+                    <i class="fa-regular fa-pen-to-square"></i>
+                  </button>
+                  <button class="btn-ghost-sm danger" data-code="${safeCode}" onclick="handleDeleteAsset(this.dataset.code)" title="ลบ">
+                    <i class="fa-regular fa-trash-can"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `
+          })
+          .join('')
+
+        updateSelectedUI()
+      }
+
+      /* ---------- Checkbox Control Functions ---------- */
+      function handleRowChkChange(chk, code) {
+        if (chk.checked) {
+          selectedCodes.add(code)
+        } else {
+          selectedCodes.delete(code)
+          document.getElementById('selectAllChk').checked = false
+        }
+        updateSelectedUI()
+      }
+
+      function toggleSelectAll(master) {
+        const checkboxes = document.querySelectorAll('.row-chk')
+        checkboxes.forEach(cb => {
+          cb.checked = master.checked
+          if (master.checked) {
+            selectedCodes.add(cb.value)
+          } else {
+            selectedCodes.delete(cb.value)
+          }
+        })
+        updateSelectedUI()
+      }
+
+      function updateSelectedUI() {
+        document.getElementById('selectedCountUI').innerText =
+          selectedCodes.size
+      }
+
+      function renderBorrowTable(borrows) {
+        const tbody = document.getElementById('borrow-table-body')
+        if (!borrows || borrows.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="9" class="empty-row">ไม่พบประวัติการยืม</td></tr>'
+          return
+        }
+        tbody.innerHTML = borrows
+          .map(
+            (row, idx) => `
+        <tr>
+          <td class="text-center txt-muted">${escapeHtml(row[0])}</td>
+          <td class="link-code" data-code="${escapeHtml(
+            row[1]
+          )}" onclick="openSingleBorrow(this.dataset.code)">${escapeHtml(
+              row[1]
+            )}</td>
+          <td>${escapeHtml(row[2])}</td>
+          <td class="text-center">${escapeHtml(row[3])}</td>
+          <td class="text-center txt-soft">${escapeHtml(row[4])}</td>
+          <td class="text-center txt-soft">${escapeHtml(row[5])}</td>
+          <td>${escapeHtml(row[6])}</td>
+          <td class="txt-muted">${escapeHtml(row[7])}</td>
+          <td class="text-center">
+            ${
+              row[8] === 'กำลังยืม'
+                ? `<button class="btn-ghost-sm" data-code="${escapeHtml(
+                    row[1]
+                  )}" data-index="${idx}" onclick="handleReturn(this.dataset.code, parseInt(this.dataset.index))">คืน</button>`
+                : '<span class="tag"><span class="tag-dot"></span>คืนแล้ว</span>'
+            }
+          </td>
+        </tr>
+      `
+          )
+          .join('')
+      }
+
+      function renderLowStockTable(items) {
+        const tbody = document.getElementById('lowStockTableBody')
+        if (!items || items.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" class="empty-row">ไม่มีสินค้าต่ำกว่า Stock Min ยอดเยี่ยมมาก!</td></tr>'
+          return
+        }
+        tbody.innerHTML = items
+          .map(
+            row => `
+        <tr>
+          <td class="fw-strong">${escapeHtml(row[0])}</td>
+          <td>${escapeHtml(row[1])}</td>
+          <td class="text-center fw-strong">${escapeHtml(row[9])}</td>
+          <td class="text-center txt-muted">${escapeHtml(row[5])}</td>
+          <td class="text-center"><span class="tag alert"><span class="tag-dot"></span>ต้องซื้อเพิ่ม</span></td>
+        </tr>
+      `
+          )
+          .join('')
+      }
+
+      function renderLogsTable(logs) {
+        const tbody = document.getElementById('logs-table-body')
+        if (!logs || logs.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" class="empty-row">ยังไม่มีประวัติกิจกรรม</td></tr>'
+          return
+        }
+        tbody.innerHTML = logs
+          .map(
+            row => `
+        <tr>
+          <td class="text-center txt-muted">${escapeHtml(row[0])}</td>
+          <td class="txt-soft">${escapeHtml(row[1])}</td>
+          <td>${escapeHtml(row[2] || '-')}</td>
+          <td class="fw-strong">${escapeHtml(row[3] || '-')}</td>
+          <td class="txt-muted">${escapeHtml(row[4] || '-')}</td>
+        </tr>
+      `
+          )
+          .join('')
+      }
+
+      function getStatusBadge(status) {
+        if (status === 'พร้อมใช้งาน')
+          return '<span class="tag ok"><span class="tag-dot"></span>พร้อมใช้งาน</span>'
+        if (status === 'ถูกยืม')
+          return '<span class="tag warn"><span class="tag-dot"></span>ถูกยืม</span>'
+        return `<span class="tag alert"><span class="tag-dot"></span>${escapeHtml(
+          status
+        )}</span>`
+      }
+
+      function openImagePreview(url, name) {
+        document.getElementById('imagePreviewImg').src = url
+        document.getElementById('imagePreviewTitle').innerText =
+          name || 'แสดงรูปภาพ'
+        modalImagePreview.show()
+      }
+
+      function previewAssetImage(url) {
+        const img = document.getElementById('assetImagePreview')
+        if (url) {
+          img.src = url
+          img.style.display = 'inline-block'
+          img.onerror = () => {
+            img.style.display = 'none'
+          }
+        } else {
+          img.style.display = 'none'
+        }
+      }
+
+      function openAddAssetModal() {
+        const form = document.getElementById('addAssetForm')
+        form.reset()
+        document.getElementById('oldAssetIdField').value = ''
+        document.getElementById('addAssetModalTitle').innerText =
+          'เพิ่มอุปกรณ์ใหม่'
+        document.getElementById('addAssetSubmitBtn').innerText = 'บันทึก'
+        form.querySelector('[name="assetId"]').readOnly = false
+        previewAssetImage('')
+        modalAddAsset.show()
+      }
+
+      function openEditAssetModal(code) {
+        const row = globalAssets.find(r => String(r[0]) === String(code))
+        if (!row) {
+          Swal.fire('ไม่พบรายการ', `ไม่พบอุปกรณ์รหัส "${code}"`, 'error')
+          return
+        }
+        const form = document.getElementById('addAssetForm')
+        form.reset()
+
+        form.querySelector('[name="assetId"]').value = row[0]
+        form.querySelector('[name="assetName"]').value = row[1]
+        form.querySelector('[name="assetCategory"]').value = row[2] || ''
+        form.querySelector('[name="assetLocation"]').value = row[3] || ''
+        form.querySelector('[name="assetMax"]').value = row[4]
+        form.querySelector('[name="assetMin"]').value = row[5]
+        form.querySelector('[name="assetPrice"]').value = row[6]
+        form.querySelector('[name="assetBtt"]').value = row[7]
+        form.querySelector('[name="assetTke"]').value = row[8]
+        form.querySelector('[name="assetStatus"]').value = row[10]
+        form.querySelector('[name="assetRemark"]').value = row[12] || ''
+        form.querySelector('[name="assetImageUrl"]').value = row[13] || ''
+        document.getElementById('oldAssetIdField').value = row[0]
+
+        previewAssetImage(row[13] || '')
+        document.getElementById(
+          'addAssetModalTitle'
+        ).innerText = `แก้ไขอุปกรณ์: ${row[0]}`
+        document.getElementById('addAssetSubmitBtn').innerText =
+          'บันทึกการแก้ไข'
+        modalAddAsset.show()
+      }
+
+      function handleDeleteAsset(code) {
+        const item = globalAssets.find(r => String(r[0]) === String(code))
+        const name = item ? item[1] : code
+        Swal.fire({
+          title: 'ยืนยันการลบอุปกรณ์?',
+          html: `รหัส: <b>${escapeHtml(code)}</b><br>ชื่อรายการ: ${escapeHtml(
+            name
+          )}<br><span class="text-danger">การลบไม่สามารถย้อนกลับได้</span>`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'ลบ',
+          cancelButtonText: 'ยกเลิก',
+          confirmButtonColor: '#0f172a'
+        }).then(result => {
+          if (result.isConfirmed) {
+            Swal.fire({
+              title: 'กำลังลบ...',
+              allowOutsideClick: false,
+              didOpen: () => Swal.showLoading()
+            })
+            google.script.run
+              .withSuccessHandler(res => {
+                if (res && res.success) {
+                  Swal.fire('สำเร็จ', res.message, 'success')
+                  loadData()
+                } else {
+                  Swal.fire(
+                    'ข้อผิดพลาด',
+                    (res && res.message) || 'เกิดข้อผิดพลาดในการลบ',
+                    'error'
+                  )
+                }
+              })
+              .withFailureHandler(err =>
+                Swal.fire(
+                  'ข้อผิดพลาด',
+                  (err && err.message) || String(err),
+                  'error'
+                )
+              )
+              .deleteAssetData(code)
+          }
+        })
+      }
+
+      function openSingleBorrow(code) {
+        selectedCodes.clear()
+        selectedCodes.add(code)
+        updateSelectedUI()
+        openBorrowModal()
+      }
+
+      function openBorrowModal() {
+        if (selectedCodes.size === 0) {
+          Swal.fire(
+            'คำเตือน',
+            'กรุณาติ๊กเลือกรายการอุปกรณ์ที่ต้องการเบิกอย่างน้อย 1 รายการ',
+            'warning'
+          )
+          return
+        }
+
+        const form = document.getElementById('borrowForm')
+        form.reset()
+
+        const listContainer = document.getElementById('borrowSelectedItemsList')
+        let html = ''
+        selectedCodes.forEach(code => {
+          const item = globalAssets.find(r => String(r[0]) === String(code))
+          const name = item ? item[1] : code
+          html += `
+            <div class="d-flex align-items-center justify-content-between my-1 p-1 bg-white border rounded">
+              <span class="fw-strong me-2">${escapeHtml(code)}</span>
+              <span class="txt-soft text-truncate flex-grow-1 me-2">${escapeHtml(
+                name
+              )}</span>
+              <div class="d-flex align-items-center" style="width: 110px;">
+                <span class="small txt-muted me-1">จำนวน:</span>
+                <input type="number" class="form-control form-control-sm borrow-qty-input" data-code="${escapeHtml(
+                  code
+                )}" value="1" min="1" required>
+              </div>
+            </div>
+          `
+        })
+
+        listContainer.innerHTML = html
+        modalBorrow.show()
+      }
+
+      function openLowStockModal() {
+        modalLowStock.show()
+      }
+
+      function handleSaveAsset(e) {
+        e.preventDefault()
+        const form = document.getElementById('addAssetForm')
+        Swal.fire({
+          title: 'กำลังบันทึก...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        })
+
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              modalAddAsset.hide()
+              Swal.fire('สำเร็จ', res.message, 'success')
+              loadData()
+            } else {
+              Swal.fire(
+                'ข้อผิดพลาด',
+                (res && res.message) || 'เกิดข้อผิดพลาดในการบันทึก',
+                'error'
+              )
+            }
+          })
+          .withFailureHandler(err =>
+            Swal.fire(
+              'ข้อผิดพลาด',
+              (err && err.message) || String(err),
+              'error'
+            )
+          )
+          .saveAssetData(form)
+      }
+
+      function handleSaveBorrow(e) {
+        e.preventDefault()
+        const form = document.getElementById('borrowForm')
+        const qtyInputs = document.querySelectorAll('.borrow-qty-input')
+
+        const items = []
+        qtyInputs.forEach(input => {
+          items.push({
+            itemCode: input.dataset.code,
+            quantity: parseInt(input.value) || 1
+          })
+        })
+
+        const payload = {
+          items: items,
+          borrowerName: form.borrowerName.value,
+          projectName: form.projectName.value,
+          locationAddress: form.locationAddress.value
+        }
+
+        Swal.fire({
+          title: 'กำลังบันทึก...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        })
+
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              modalBorrow.hide()
+              selectedCodes.clear()
+              updateSelectedUI()
+              Swal.fire('สำเร็จ', res.message, 'success')
+              loadData()
+            } else {
+              Swal.fire(
+                'ข้อผิดพลาด',
+                (res && res.message) || 'เกิดข้อผิดพลาดในการบันทึกการเบิก',
+                'error'
+              )
+            }
+          })
+          .withFailureHandler(err =>
+            Swal.fire(
+              'ข้อผิดพลาด',
+              (err && err.message) || String(err),
+              'error'
+            )
+          )
+          .saveBatchBorrowData(payload)
+      }
+
+      function handleReturn(code, rowIndex) {
+        Swal.fire({
+          title: 'ยืนยันการคืนอุปกรณ์?',
+          text: `รหัสอุปกรณ์: ${code}`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'ยืนยัน',
+          cancelButtonText: 'ยกเลิก'
+        }).then(result => {
+          if (result.isConfirmed) {
+            Swal.fire({
+              title: 'กำลังประมวลผล...',
+              allowOutsideClick: false,
+              didOpen: () => Swal.showLoading()
+            })
+            google.script.run
+              .withSuccessHandler(res => {
+                if (res && res.success) {
+                  Swal.fire('สำเร็จ', res.message, 'success')
+                  loadData()
+                } else {
+                  Swal.fire(
+                    'ข้อผิดพลาด',
+                    (res && res.message) || 'เกิดข้อผิดพลาดในการคืนอุปกรณ์',
+                    'error'
+                  )
+                }
+              })
+              .withFailureHandler(err =>
+                Swal.fire(
+                  'ข้อผิดพลาด',
+                  (err && err.message) || String(err),
+                  'error'
+                )
+              )
+              .returnAsset(code, rowIndex)
+          }
+        })
+      }
+    </script>
+  </body>
+</html>
